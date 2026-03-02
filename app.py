@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
 
-# Sayfa konfigürasyonu - Profesyonel görünüm
+
 st.set_page_config(
     page_title="Credit Risk Analyzer - Wholesale Banking",
     page_icon="📊",
@@ -14,10 +14,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Profesyonel CSS
+
 st.markdown("""
 <style>
-    /* Ana container */
+
     .main-header {
         background: linear-gradient(90deg, #1a237e 0%, #0d47a1 100%);
         padding: 1.5rem;
@@ -188,12 +188,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Oyunun Konfigürasyonu ---
+
 INITIAL_CAPITAL = 10_000_000  # 10 Milyon USD
 MAX_ROUNDS = 8
 RISK_FREE_RATE = 0.05  # %5 risksiz faiz oranı
 
-# Sektör verileri (profesyonel)
+
 SECTORS = {
     'Technology': {
         'base_pd': 0.03,  # Baz PD
@@ -245,12 +245,12 @@ SECTORS = {
     }
 }
 
-# Finansal göstergeler
+
 LEVERAGE_RATIOS = ['Very Low (<20%)', 'Low (20-40%)', 'Moderate (40-60%)', 'High (60-80%)', 'Very High (>80%)']
 COVERAGE_RATIOS = ['Strong (>3x)', 'Good (2-3x)', 'Adequate (1.5-2x)', 'Weak (1-1.5x)', 'Critical (<1x)']
 PROFITABILITY = ['Strong (>15%)', 'Good (10-15%)', 'Average (5-10%)', 'Weak (0-5%)', 'Loss Making']
 
-# --- PD Hesaplama Fonksiyonu ---
+
 def calculate_pd(company_data):
     """
     Probability of Default hesaplama - Gelişmiş model
@@ -258,8 +258,7 @@ def calculate_pd(company_data):
     """
     # Baz PD (sektör bazlı)
     base_pd = SECTORS[company_data['sector']]['base_pd']
-    
-    # Kaldıraç etkisi
+
     leverage_score = {
         'Very Low (<20%)': -0.02,
         'Low (20-40%)': 0,
@@ -268,7 +267,7 @@ def calculate_pd(company_data):
         'Very High (>80%)': 0.10
     }.get(company_data['leverage'], 0)
     
-    # Nakit akışı etkisi
+
     coverage_score = {
         'Strong (>3x)': -0.03,
         'Good (2-3x)': -0.01,
@@ -277,7 +276,7 @@ def calculate_pd(company_data):
         'Critical (<1x)': 0.08
     }.get(company_data['coverage'], 0)
     
-    # Karlılık etkisi
+
     profitability_score = {
         'Strong (>15%)': -0.02,
         'Good (10-15%)': 0,
@@ -286,31 +285,31 @@ def calculate_pd(company_data):
         'Loss Making': 0.07
     }.get(company_data['profitability'], 0)
     
-    # Büyüklük etkisi (ölçek ekonomisi)
+
     size_score = -0.01 if company_data['size'] == 'Large' else 0.01 if company_data['size'] == 'Small' else 0
     
-    # Toplam PD
+
     pd_value = base_pd + leverage_score + coverage_score + profitability_score + size_score
     
-    # PD'yi 0.01 ile 0.40 arasında sınırla (1% - 40%)
+
     pd_value = max(0.01, min(0.40, pd_value))
     
     return round(pd_value, 4)
 
-# --- Firma Üretme Fonksiyonu ---
+
 def generate_company():
     """Profesyonel firma profili üret"""
     sector = random.choice(list(SECTORS.keys()))
     
-    # Firma büyüklüğü
+
     size = random.choice(['Small', 'Medium', 'Large'])
     
-    # Finansal göstergeler
+
     leverage = random.choice(LEVERAGE_RATIOS)
     coverage = random.choice(COVERAGE_RATIOS)
     profitability = random.choice(PROFITABILITY)
     
-    # Kredi detayları
+
     if size == 'Large':
         loan_amount = random.randint(2_000_000, 5_000_000)
     elif size == 'Medium':
@@ -320,7 +319,7 @@ def generate_company():
     
     maturity = random.choice([12, 24, 36, 48, 60])  # ay
     
-    # Geçmiş performans
+
     years_in_business = random.randint(3, 50)
     previous_defaults = random.choices([0, 1, 2], weights=[0.7, 0.2, 0.1])[0]
     
@@ -338,35 +337,35 @@ def generate_company():
         'previous_defaults': previous_defaults
     }
     
-    # PD hesapla
+
     pd_value = calculate_pd(company_data)
     company_data['pd'] = pd_value
     
-    # Risk primi hesapla (PD'ye göre)
+
     risk_premium = pd_value * 2  # Basit risk primi
     company_data['interest_rate'] = round(RISK_FREE_RATE + risk_premium, 4)
     
     return company_data
 
-# --- Session State Başlatma (GÜVENLİ) ---
+
 def init_session_state():
     """Tüm session state değişkenlerini güvenli bir şekilde başlat"""
     
-    # Sermaye
+
     if 'capital' not in st.session_state:
         st.session_state.capital = INITIAL_CAPITAL
     
     if 'initial_capital' not in st.session_state:
         st.session_state.initial_capital = INITIAL_CAPITAL
     
-    # Oyun durumu
+
     if 'round' not in st.session_state:
         st.session_state.round = 1
     
     if 'game_over' not in st.session_state:
         st.session_state.game_over = False
     
-    # Firma ve sonuçlar
+
     if 'current_company' not in st.session_state:
         st.session_state.current_company = generate_company()
     
@@ -376,7 +375,7 @@ def init_session_state():
     if 'result_color' not in st.session_state:
         st.session_state.result_color = "info"
     
-    # İstatistikler - EN ÖNEMLİ KISIM
+
     if 'loans_given' not in st.session_state:
         st.session_state.loans_given = 0
     
@@ -386,21 +385,21 @@ def init_session_state():
     if 'loans_repaid' not in st.session_state:
         st.session_state.loans_repaid = 0
     
-    # PORTFOLIO - mutlaka başlat
+
     if 'portfolio' not in st.session_state:
         st.session_state.portfolio = []  # Boş liste olarak başlat
     
-    # Risk metrikleri
+
     if 'expected_loss' not in st.session_state:
         st.session_state.expected_loss = 0
     
     if 'risk_weighted_assets' not in st.session_state:
         st.session_state.risk_weighted_assets = 0
 
-# Session state'i başlat - KODUN EN BAŞINDA ÇALIŞMALI
+
 init_session_state()
 
-# --- Ana Header (Profesyonel) ---
+
 st.markdown(f"""
 <div class='main-header'>
     <h1>📊 Wholesale Credit Risk Analyzer</h1>
@@ -408,7 +407,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# --- Portfolio Metrics (Dashboard) ---
+
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -472,11 +471,11 @@ with col4:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- Ana Oyun Alanı ---
+
 if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
     company = st.session_state.current_company
     
-    # Tüm değerleri güvenli bir şekilde al
+
     pd_value = company.get('pd', 0.05)  # Varsayılan %5
     interest_rate = company.get('interest_rate', RISK_FREE_RATE + pd_value * 2)
     years_in_business = company.get('years_in_business', random.randint(3, 20))
@@ -491,7 +490,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
     coverage = company.get('coverage', 'Adequate (1.5-2x)')
     profitability = company.get('profitability', 'Average (5-10%)')
     
-    # Company Profile Card
+
     st.markdown(f"""
     <div class='company-card'>
         <div class='company-header'>
@@ -505,7 +504,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
     with col1:
         st.markdown("#### 📋 Credit Application")
         
-        # Loan Details
+
         st.markdown(f"""
         <div class='info-item'>
             <div class='info-label'>Requested Amount</div>
@@ -523,7 +522,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
         </div>
         """, unsafe_allow_html=True)
         
-        # Company History
+
         st.markdown(f"""
         <div class='info-item'>
             <div class='info-label'>Years in Business</div>
@@ -561,7 +560,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- PD Göstergesi ---
+
     col1, col2 = st.columns([2, 1])
     
     with col1:
@@ -603,18 +602,18 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # --- Karar Butonları ---
+
     col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
     
     with col2:
         if st.button("✅ APPROVE LOAN", key=f"approve_{st.session_state.round}", 
                     type="primary", use_container_width=True):
             
-            # Portfolio'nun var olduğundan emin ol (tekrar kontrol)
+            
             if 'portfolio' not in st.session_state:
                 st.session_state.portfolio = []
             
-            # Kredi sonucunu hesapla
+
             default = random.random() < pd_value
             
             if default:
@@ -630,7 +629,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
                 """
                 st.session_state.result_color = "error"
             else:
-                # Repaid
+
                 profit = loan_amount * interest_rate
                 st.session_state.capital += profit
                 st.session_state.loans_repaid += 1
@@ -642,7 +641,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
                 """
                 st.session_state.result_color = "success"
             
-            # Portföye ekle
+
             st.session_state.portfolio.append({
                 'amount': loan_amount,
                 'pd': pd_value,
@@ -653,7 +652,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
             
             st.session_state.loans_given += 1
             
-            # Sonraki tura geç
+
             if st.session_state.round < MAX_ROUNDS:
                 st.session_state.round += 1
                 st.session_state.current_company = generate_company()
@@ -672,7 +671,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
             """
             st.session_state.result_color = "info"
             
-            # Sonraki tura geç
+          
             if st.session_state.round < MAX_ROUNDS:
                 st.session_state.round += 1
                 st.session_state.current_company = generate_company()
@@ -681,7 +680,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
             
             st.rerun()
     
-    # Sonuç Mesajı
+
     if st.session_state.result_message:
         if st.session_state.result_color == "error":
             st.error(st.session_state.result_message)
@@ -690,7 +689,7 @@ if not st.session_state.game_over and st.session_state.round <= MAX_ROUNDS:
         else:
             st.info(st.session_state.result_message)
 
-# --- Oyun Sonu Raporu ---
+
 elif st.session_state.game_over:
     st.balloons()
     
@@ -701,7 +700,7 @@ elif st.session_state.game_over:
     </div>
     """, unsafe_allow_html=True)
     
-    # Final Metrics
+
     total_return = st.session_state.capital - INITIAL_CAPITAL
     return_percent = (total_return / INITIAL_CAPITAL) * 100
     return_class = "risk-high" if total_return < 0 else "risk-low"
@@ -747,7 +746,7 @@ elif st.session_state.game_over:
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Portfolio Distribution
+
     if st.session_state.portfolio:
         st.subheader("📈 Portfolio Analysis")
         
@@ -756,7 +755,7 @@ elif st.session_state.game_over:
         col1, col2 = st.columns(2)
         
         with col1:
-            # Sektör dağılımı
+
             sector_dist = df['sector'].value_counts()
             fig_sector = px.pie(
                 values=sector_dist.values,
@@ -772,7 +771,7 @@ elif st.session_state.game_over:
             st.plotly_chart(fig_sector, use_container_width=True)
         
         with col2:
-            # PD Dağılımı
+
             fig_pd = px.histogram(
                 df, 
                 x='pd',
@@ -788,7 +787,7 @@ elif st.session_state.game_over:
             )
             st.plotly_chart(fig_pd, use_container_width=True)
     
-    # Risk Raporu
+
     st.subheader("📋 Detailed Risk Report")
     
     if st.session_state.portfolio:
@@ -806,7 +805,7 @@ elif st.session_state.game_over:
         report_df = pd.DataFrame(report_data)
         st.table(report_df)
     
-    # Performance Rating
+
     st.markdown("<br>", unsafe_allow_html=True)
     
     if return_percent > 10:
@@ -818,7 +817,7 @@ elif st.session_state.game_over:
     else:
         st.error("📉 **Needs Improvement** Significant losses. Strengthen credit analysis process.")
     
-    # New Game Button
+
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 Start New Analysis", key="new_game", use_container_width=True):
         # Tüm session state'i temizle
@@ -826,10 +825,11 @@ elif st.session_state.game_over:
             del st.session_state[key]
         st.rerun()
 
-# --- Footer ---
+
 st.markdown("""
 <div class='footer'>
     <p>Wholesale Credit Risk Modeling Team | Probability of Default (PD) Model v2.0</p>
     <p style='font-size: 0.8rem;'>© 2024 - Advanced Risk Analytics for Institutional Banking</p>
 </div>
 """, unsafe_allow_html=True)
+
